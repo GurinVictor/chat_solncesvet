@@ -44,10 +44,30 @@ export default function ChatWidget() {
         sessionId: sessionId
       });
 
-      const botReply = res.data?.[0]?.output || "Спасибо! Я обрабатываю ваш запрос.";
+      console.log("Ответ от сервера:", res.data);
+
+      let botReply = "Спасибо! Я обрабатываю ваш запрос.";
+
+      if (Array.isArray(res.data) && res.data[0]?.output) {
+        botReply = res.data[0].output;
+      } else if (typeof res.data === "object" && res.data.output) {
+        botReply = res.data.output;
+      } else if (typeof res.data === "string") {
+        try {
+          const parsed = JSON.parse(res.data);
+          if (Array.isArray(parsed) && parsed[0]?.output) {
+            botReply = parsed[0].output;
+          } else if (parsed.output) {
+            botReply = parsed.output;
+          }
+        } catch (e) {
+          console.warn("Ошибка парсинга строки:", e);
+        }
+      }
+
       setMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
     } catch (error) {
-      console.error(error);
+      console.error("Ошибка при отправке сообщения:", error);
       setMessages((prev) => [...prev, { sender: "bot", text: "Ошибка соединения с сервером." }]);
     }
   };
