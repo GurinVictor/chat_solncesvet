@@ -55,10 +55,12 @@ export default function ChatWidget() {
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={\`max-w-[80%] p-3 rounded-lg whitespace-pre-line text-sm leading-snug \${msg.sender === "user"
-              ? "bg-white self-end text-black border border-gray-200"
-              : "bg-[#FFF2C8] self-start text-black border border-gray-300"
-            }\`}
+className={
+  "max-w-[80%] p-3 rounded-lg whitespace-pre-line text-sm leading-snug " +
+  (msg.sender === "user"
+    ? "bg-white self-end text-black border border-gray-200"
+    : "bg-[#FFF2C8] self-start text-black border border-gray-300")
+}
           >
             {msg.text}
           </div>
