@@ -13,6 +13,17 @@ export default function ChatWidget() {
 
   const webhookUrl = "https://guru-ai.online/webhook/d55b53fc-6750-4521-a02a-2949eac00dc9/chat";
 
+  // 🆕 Получаем или создаём sessionId
+  const getOrCreateSessionId = () => {
+    const existing = localStorage.getItem("sessionId");
+    if (existing) return existing;
+    const newId = crypto.randomUUID();
+    localStorage.setItem("sessionId", newId);
+    return newId;
+  };
+
+  const sessionId = getOrCreateSessionId();
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -30,7 +41,8 @@ export default function ChatWidget() {
 
     try {
       const res = await axios.post(webhookUrl, {
-        message: input
+        message: input,
+        sessionId: sessionId // 🆕 передаём sessionId
       });
 
       const botReply = res.data?.message || "Спасибо! Я обрабатываю ваш запрос.";
@@ -55,12 +67,12 @@ export default function ChatWidget() {
         {messages.map((msg, i) => (
           <div
             key={i}
-className={
-  "max-w-[80%] p-3 rounded-lg whitespace-pre-line text-sm leading-snug " +
-  (msg.sender === "user"
-    ? "bg-white self-end text-black border border-gray-200"
-    : "bg-[#FFF2C8] self-start text-black border border-gray-300")
-}
+            className={
+              "max-w-[80%] p-3 rounded-lg whitespace-pre-line text-sm leading-snug " +
+              (msg.sender === "user"
+                ? "bg-white self-end text-black border border-gray-200"
+                : "bg-[#FFF2C8] self-start text-black border border-gray-300")
+            }
           >
             {msg.text}
           </div>
