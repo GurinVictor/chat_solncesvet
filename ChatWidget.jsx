@@ -40,11 +40,11 @@ export default function ChatWidget() {
 
     try {
       const res = await axios.post(webhookUrl, {
-        chatInput: input,       // 🔄 изменено с message → chatInput
+        chatInput: input,
         sessionId: sessionId
       });
 
-      const botReply = res.data?.message || "Спасибо! Я обрабатываю ваш запрос.";
+      const botReply = res.data?.[0]?.output || "Спасибо! Я обрабатываю ваш запрос.";
       setMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
     } catch (error) {
       console.error(error);
