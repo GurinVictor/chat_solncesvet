@@ -9,6 +9,7 @@ export default function ChatWidget() {
     }
   ]);
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false); // 🆕 для "Виктория печатает..."
   const messagesEndRef = useRef(null);
 
   const webhookUrl = "https://guru-ai.online/webhook/d55b53fc-6750-4521-a02a-2949eac00dc9/chat";
@@ -29,7 +30,7 @@ export default function ChatWidget() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isTyping]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -37,6 +38,7 @@ export default function ChatWidget() {
     const newUserMessage = { sender: "user", text: input };
     setMessages((prev) => [...prev, newUserMessage]);
     setInput("");
+    setIsTyping(true); // 🆕
 
     try {
       const res = await axios.post(webhookUrl, {
@@ -69,6 +71,8 @@ export default function ChatWidget() {
     } catch (error) {
       console.error("Ошибка при отправке сообщения:", error);
       setMessages((prev) => [...prev, { sender: "bot", text: "Ошибка соединения с сервером." }]);
+    } finally {
+      setIsTyping(false); // 🆕 отключаем индикатор
     }
   };
 
@@ -80,11 +84,14 @@ export default function ChatWidget() {
   };
 
   return (
-    <div className="w-full p-4 bg-[#FFF6E4] rounded-xl shadow-md h-[90vh] flex flex-col">
+    <div className="max-w-xl mx-auto p-4 bg-[#FFF6E4] rounded-xl shadow-md h-[90vh] flex flex-col">
       <h2 className="text-xl font-bold text-white bg-[#F6A400] p-3 rounded-md">Подбор курса за 2 минуты</h2>
       <div className="flex-1 overflow-y-auto mt-3 mb-2 space-y-2 px-2">
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+          <div
+            key={i}
+            className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+          >
             <div
               className={
                 "max-w-[80%] p-3 rounded-lg whitespace-pre-line text-sm leading-snug " +
@@ -97,6 +104,9 @@ export default function ChatWidget() {
             </div>
           </div>
         ))}
+        {isTyping && (
+          <div className="text-xs italic text-gray-500 px-2">Виктория печатает…</div>
+        )}
         <div ref={messagesEndRef} />
       </div>
       <div className="flex items-center gap-2">
