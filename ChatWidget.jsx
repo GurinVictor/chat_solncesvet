@@ -13,7 +13,6 @@ export default function ChatWidget() {
 
   const webhookUrl = "https://guru-ai.online/webhook/d55b53fc-6750-4521-a02a-2949eac00dc9/chat";
 
-  // 🆕 Получаем или создаём sessionId
   const getOrCreateSessionId = () => {
     const existing = localStorage.getItem("sessionId");
     if (existing) return existing;
@@ -41,8 +40,8 @@ export default function ChatWidget() {
 
     try {
       const res = await axios.post(webhookUrl, {
-        message: input,
-        sessionId: sessionId // 🆕 передаём sessionId
+        chatInput: input,       // 🔄 изменено с message → chatInput
+        sessionId: sessionId
       });
 
       const botReply = res.data?.message || "Спасибо! Я обрабатываю ваш запрос.";
