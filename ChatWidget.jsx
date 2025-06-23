@@ -1,4 +1,3 @@
-// 📁 ChatWidget.jsx
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
@@ -47,10 +46,28 @@ export default function ChatWidget() {
 
       console.log("Ответ от сервера:", res.data);
 
-      const botReply = res.data?.[0]?.output || "Спасибо! Я обрабатываю ваш запрос.";
+      let botReply = "Спасибо! Я обрабатываю ваш запрос.";
+
+      if (Array.isArray(res.data) && res.data[0]?.output) {
+        botReply = res.data[0].output;
+      } else if (typeof res.data === "object" && res.data.output) {
+        botReply = res.data.output;
+      } else if (typeof res.data === "string") {
+        try {
+          const parsed = JSON.parse(res.data);
+          if (Array.isArray(parsed) && parsed[0]?.output) {
+            botReply = parsed[0].output;
+          } else if (parsed.output) {
+            botReply = parsed.output;
+          }
+        } catch (e) {
+          console.warn("Ошибка парсинга строки:", e);
+        }
+      }
+
       setMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
     } catch (error) {
-      console.error("Ошибка при запросе к webhook:", error);
+      console.error("Ошибка при отправке сообщения:", error);
       setMessages((prev) => [...prev, { sender: "bot", text: "Ошибка соединения с сервером." }]);
     }
   };
@@ -63,18 +80,24 @@ export default function ChatWidget() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-4 bg-[#FFF6E4] rounded-xl shadow-md min-h-0 flex flex-col h-screen overflow-hidden">
+    <div className="max-w-xl mx-auto p-4 bg-[#FFF6E4] rounded-xl shadow-md h-[90vh] flex flex-col">
       <h2 className="text-xl font-bold text-white bg-[#F6A400] p-3 rounded-md">Подбор курса за 2 минуты</h2>
       <div className="flex-1 overflow-y-auto mt-3 mb-2 space-y-2 px-2">
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`max-w-[80%] p-3 rounded-lg whitespace-pre-line text-sm leading-snug border 
-              ${msg.sender === "user"
-                ? "bg-white text-black border-gray-200 self-end"
-                : "bg-[#FFF2C8] text-black border-gray-300 self-start"}`}
+            className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
           >
-            {msg.text}
+            <div
+              className={
+                "max-w-[80%] p-3 rounded-lg whitespace-pre-line text-sm leading-snug " +
+                (msg.sender === "user"
+                  ? "bg-white text-black border border-gray-200"
+                  : "bg-[#FFF2C8] text-black border border-gray-300")
+              }
+            >
+              {msg.text}
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -97,9 +120,4 @@ export default function ChatWidget() {
       </div>
     </div>
   );
-} 
-
-// ✅ Изменения:
-// - сообщения пользователя справа (self-end), бота — слева (self-start)
-// - добавлен meta viewport в index.html
-// - удалён фиксированный vh в пользу h-screen/min-h-0
+}
