@@ -11,7 +11,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
-  const webhookUrl = "https://guru-ai.online/webhook/8c4fc611-0a48-4dd8-8a15-c90fac2556c0";
+  const webhookUrl = "https://guru-ai.online/webhook/d55b53fc-6750-4521-a02a-2949eac00dc9/chat";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
