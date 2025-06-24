@@ -2,18 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 export default function ChatWidget() {
-  const [messages, setMessages] = useState([
-    {
-      sender: "bot",
-      text: `Добрый день! Я помогу подобрать курс.\n\n🟡 Напишите, пожалуйста:\n– Кем вы работаете (учитель, воспитатель, логопед и т.д.)\n– И по какой теме хотите пройти курс (например, ФГОС, ОВЗ, ИКТ, воспитательная работа...)\n\nЯ сразу подберу подходящие программы 📋`
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false); // 🆕 для "Виктория печатает..."
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   const webhookUrl = "https://guru-ai.online/webhook/d55b53fc-6750-4521-a02a-2949eac00dc9/chat";
 
+  // Получаем или создаём sessionId
   const getOrCreateSessionId = () => {
     const existing = localStorage.getItem("sessionId");
     if (existing) return existing;
@@ -21,8 +17,28 @@ export default function ChatWidget() {
     localStorage.setItem("sessionId", newId);
     return newId;
   };
-
   const sessionId = getOrCreateSessionId();
+
+  // Загружаем историю при первом рендере
+  useEffect(() => {
+    const savedMessages = localStorage.getItem("chatMessages");
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    } else {
+      // Если история пустая, добавляем приветственное сообщение
+      setMessages([
+        {
+          sender: "bot",
+          text: `Добрый день! Я помогу подобрать курс.\n\n🟡 Напишите, пожалуйста:\n– Кем вы работаете (учитель, воспитатель, логопед и т.д.)\n– И по какой теме хотите пройти курс (например, ФГОС, ОВЗ, ИКТ, воспитательная работа...)\n\nЯ сразу подберу подходящие программы 📋`
+        }
+      ]);
+    }
+  }, []);
+
+  // Сохраняем историю при каждом обновлении сообщений
+  useEffect(() => {
+    localStorage.setItem("chatMessages", JSON.stringify(messages));
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,7 +54,7 @@ export default function ChatWidget() {
     const newUserMessage = { sender: "user", text: input };
     setMessages((prev) => [...prev, newUserMessage]);
     setInput("");
-    setIsTyping(true); // 🆕
+    setIsTyping(true);
 
     try {
       const res = await axios.post(webhookUrl, {
@@ -72,7 +88,7 @@ export default function ChatWidget() {
       console.error("Ошибка при отправке сообщения:", error);
       setMessages((prev) => [...prev, { sender: "bot", text: "Ошибка соединения с сервером." }]);
     } finally {
-      setIsTyping(false); // 🆕 отключаем индикатор
+      setIsTyping(false);
     }
   };
 
