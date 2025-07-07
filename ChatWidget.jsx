@@ -113,7 +113,20 @@ export default function ChatWidget() {
                   : "bg-[#FFF2C8] text-black border border-gray-300")
               }
             >
-              <ReactMarkdown>{msg.text}</ReactMarkdown>
+              <ReactMarkdown
+  components={{
+    a: ({ node, ...props }) => (
+      <a
+        {...props}
+        className="text-blue-600 underline hover:text-blue-800"
+        target="_blank"
+        rel="noopener noreferrer"
+      />
+    )
+  }}
+>
+  {msg.text}
+</ReactMarkdown>
             </div>
           </div>
         ))}
